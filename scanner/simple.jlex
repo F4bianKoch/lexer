@@ -1,79 +1,373 @@
-import java_cup.runtime.*; // defines the Symbol class
+import java_cup.runtime.*;
+
+//-----------------------------------------------------------------------------
 
 // The generated scanner will return a Symbol for each token that it finds.
-// A Symbol contains an Object field named value; that field will be of type
-// TokenVal, defined below.
+// A Symbol contains an Object field named value; that field will be of type 
+// TokenVal.
 //
 // A TokenVal object contains the line number on which the token occurs as
 // well as the number of the character on that line that starts the token.
 // Some tokens (e.g., literals) also include the value of the token.
 
-class TokenVal {
- // fields
-    int linenum;
-    int charnum;
- // constructor
-    TokenVal(int l, int c) {
-        linenum = l;
-	charnum = c;
-    }
-}
+//-----------------------------------------------------------------------------
 
-class IntLitTokenVal extends TokenVal {
- // new field: the value of the integer literal
-    int intVal;
- // constructor
-    IntLitTokenVal(int l, int c, int val) {
-        super(l,c);
-	intVal = val;
-    }
-}
-
-
-// The following class is used to keep track of the character number at which
-// the current token starts on its line.
-class CharNum {
-  static int num=1;
-}
 %%
 
+%{
+  StringBuilder string = new StringBuilder();
+%}
+
 DIGIT=		[0-9]
-WHITESPACE=	[\ \t\n]
+WHITESPACE=	[\ \t\r\n]
+Identifier = [:jletter:] [:jletterdigit:]*
 
-// The next 3 lines are included so that we can use the generated scanner
-// with java CUP (the Java parser generator)
-%implements java_cup.runtime.Scanner
-%function next_token
-%type java_cup.runtime.Symbol
-
-// Tell JLex what to do on end-of-file
-%eofval{
-return new Symbol(sym.EOF);
-%eofval}
+%cup
 
 // Turn on line counting
 %line
+%column
+
+%state STRING
 
 %%
 
-{DIGIT}+   {// NOTE: the following computation of the integer value does NOT
-	    //       check for overflow.  This must be changed.
-	    int val = Integer.parseInt(yytext());
-	    Symbol S = new Symbol(sym.INTLITERAL,
-			          new IntLitTokenVal(yyline+1, CharNum.num, val)
-				 );
-	    CharNum.num += yytext().length();
-	    return S;
-	   }
+//-----------------------------------------------------------------------------
+<YYINITIAL> {
+	[-+]?{DIGIT}+
+	{
+		try {
+			int val = Integer.parseInt(yytext());
+			Symbol S = new Symbol(sym.INTLITERAL,
+				new IntLitTokenVal(yyline+1, yycolumn, val)
+			);
 
-{WHITESPACE}+  {CharNum.num += yytext().length();}
+			return S;
 
-"+"	   {Symbol S = new Symbol(sym.PLUS, new TokenVal(yyline+1, CharNum.num));
-	    CharNum.num++;
-	    return S;
-	   }
-	    
-.	   {Errors.fatal(yyline+1, CharNum.num,
-			 "ignoring illegal character: " + yytext());
-	    CharNum.num++;
-	   }
+		} catch(NumberFormatException e) {
+			Errors.warn(yyline+1, yycolumn, "Value out of bounds!");
+		}
+	}
+
+	\"
+	{ 
+		string.setLength(0); yybegin(STRING);
+	}
+
+	{WHITESPACE}+
+	{yycolumn += yytext().length();}
+
+	// Symbols
+	//-----------------------------------------------------------------------------
+
+	"{"
+	{
+		Symbol S = new Symbol(sym.LCURLY, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"}"
+	{
+		Symbol S = new Symbol(sym.RCURLY, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"("
+	{
+		Symbol S = new Symbol(sym.LPAREN, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	")"
+	{
+		Symbol S = new Symbol(sym.RPAREN, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	","
+	{
+		Symbol S = new Symbol(sym.COMMA, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"="
+	{
+		Symbol S = new Symbol(sym.ASSIGN, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	";"
+	{
+		Symbol S = new Symbol(sym.SEMICOLON, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"+"
+	{
+		Symbol S = new Symbol(sym.PLUS, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"-"
+	{
+		Symbol S = new Symbol(sym.MINUS, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"*"
+	{
+		Symbol S = new Symbol(sym.TIMES, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"/"
+	{
+		Symbol S = new Symbol(sym.DIVIDE, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"!"
+	{
+		Symbol S = new Symbol(sym.NOT, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"&&"
+	{
+		Symbol S = new Symbol(sym.AND, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"||"
+	{
+		Symbol S = new Symbol(sym.OR, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"=="
+	{
+		Symbol S = new Symbol(sym.EQUALS, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"!="
+	{
+		Symbol S = new Symbol(sym.NOTEQUALS, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"<"
+	{
+		Symbol S = new Symbol(sym.LESS, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	">"
+	{
+		Symbol S = new Symbol(sym.GREATER, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"<="
+	{
+		Symbol S = new Symbol(sym.LESSEQ, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	">="
+	{
+		Symbol S = new Symbol(sym.GREATEREQ, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	// Reserved words
+	//-----------------------------------------------------------------------------
+
+	"String"
+	{
+		Symbol S = new Symbol(sym.STRING, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"System.out.println"
+	{
+		Symbol S = new Symbol(sym.SYSTEM_OUT, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"boolean"
+	{
+		Symbol S = new Symbol(sym.BOOLEAN, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"class"
+	{
+		Symbol S = new Symbol(sym.CLASS, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"do"
+	{
+		Symbol S = new Symbol(sym.DO, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"else"
+	{
+		Symbol S = new Symbol(sym.ELSE, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"false"
+	{
+		Symbol S = new Symbol(sym.FALSE, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"if"
+	{
+		Symbol S = new Symbol(sym.IF, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"int"
+	{
+		Symbol S = new Symbol(sym.INT, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"public"
+	{
+		Symbol S = new Symbol(sym.PUBLIC, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"return"
+	{
+		Symbol S = new Symbol(sym.RETURN, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"static"
+	{
+		Symbol S = new Symbol(sym.STATIC, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"true"
+	{
+		Symbol S = new Symbol(sym.TRUE, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"void"
+	{
+		Symbol S = new Symbol(sym.VOID, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"while"
+	{
+		Symbol S = new Symbol(sym.WHILE, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"case"
+	{
+		Symbol S = new Symbol(sym.CASE, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+		
+	"switch"
+	{
+		Symbol S = new Symbol(sym.SWITCH, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"default"
+	{
+		Symbol S = new Symbol(sym.DEFAULT, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"and"
+	{
+		Symbol S = new Symbol(sym.AND, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	"or"
+	{
+		Symbol S = new Symbol(sym.OR, new TokenVal(yyline+1, yycolumn));
+		return S;
+	}
+
+	//-----------------------------------------------------------------------------
+
+	{Identifier}
+	{
+		String val = yytext();
+		Symbol S = new Symbol(sym.ID, new IdentifierTokenValue(yyline+1, yycolumn, val));
+		return S;
+	}
+}
+
+// Strings
+//-----------------------------------------------------------------------------
+
+<STRING> {
+	\"
+	{ 
+		yybegin(YYINITIAL); 
+		Symbol S = new Symbol(
+			sym.STRINGLITERAL,
+			new StringTokenValue(yyline+1, yycolumn, string.toString())
+		); 
+		return S;
+	}
+
+	[^\n\r\"\\]+
+	{ 
+		string.append(yytext());
+	}
+
+	\\t
+	{
+		string.append('\t');
+	}
+
+	\\n
+	{ 
+		string.append('\n');
+	}
+
+	\\r
+	{
+		string.append('\r'); 
+	}
+
+	\\\"
+	{ 
+		string.append('\"'); 
+	}
+
+	\\
+	{ 
+		string.append('\\'); 
+	}
+
+	<<EOF>>
+	{
+		Errors.fatal(yyline+1, yycolumn,
+			"String was never closed! " + string.toString() 
+		);
+	}
+}
+
+.
+{
+	Errors.fatal(yyline+1, yycolumn,
+		"ignoring illegal character: " + yytext()
+	);
+}

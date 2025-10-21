@@ -47,5 +47,9 @@ public class sym {
   public static final int OR = 32;
   public static final int SEMICOLON = 25;
   public static final int GREATEREQ = 38;
+  public static final int SWITCH = 40;
+  public static final int CASE = 41;
+  public static final int DEFAULT = 42;
+  public static final int SYSTEM_OUT = 43;
 }
 

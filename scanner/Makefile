@@ -43,10 +43,10 @@ clean:
 	rm -f *.class simple.jlex.java  simple-lexer.jar *.zip
 
 
-test:	test.sim P2.class
+test:	eof.sim P2.class
 	@echo "If you get an error below your Scanner does not work yet!"
 	@echo "Modify the simple.jlex specification to implement the language!"
-	java -cp $(CLASSPATH) P2 test.sim
+	java -cp $(CLASSPATH) P2 eof.sim
 
 # Execute the compiler on a file name on the command line e.g.
 # make atest TEST=mytest.sim
