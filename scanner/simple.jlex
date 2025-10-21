@@ -357,8 +357,17 @@ Identifier = [:jletter:] [:jletterdigit:]*
 		string.append('\\'); 
 	}
 
+	\n
+	{
+		yybegin(YYINITIAL);
+		Errors.fatal(yyline+1, yycolumn,
+			"String was never closed! " + string.toString() 
+		);
+	}
+	
 	<<EOF>>
 	{
+		yybegin(YYINITIAL);
 		Errors.fatal(yyline+1, yycolumn,
 			"String was never closed! " + string.toString() 
 		);
