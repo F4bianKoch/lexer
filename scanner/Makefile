@@ -46,7 +46,7 @@ clean:
 test:	eof.sim P2.class
 	@echo "If you get an error below your Scanner does not work yet!"
 	@echo "Modify the simple.jlex specification to implement the language!"
-	java -cp $(CLASSPATH) P2 eof.sim
+	java -cp $(CLASSPATH) P2 test2.sim
 
 # Execute the compiler on a file name on the command line e.g.
 # make atest TEST=mytest.sim

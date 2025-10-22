@@ -18,9 +18,23 @@ import java_cup.runtime.*;
   StringBuilder string = new StringBuilder();
 %}
 
-DIGIT=		[0-9]
-WHITESPACE=	[\ \t\r\n]
-Identifier = [:jletter:] [:jletterdigit:]*
+
+LineTerminator = \r|\n|\r\n
+InputCharacter = [^\r\n]
+WHITESPACE	= [\ \t\r\n]
+
+// Comment
+//-----------------------------------------------------------------------------
+TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}?
+DocumentationComment = "/**" {CommentContent} "*"+ "/"
+CommentContent       = ( [^*] | \*+ [^/*] )*
+
+COMMENT = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment}
+//-----------------------------------------------------------------------------
+
+DIGIT		= [0-9]
+Identifier	= [:jletter:] [:jletterdigit:]*
 
 %cup
 
@@ -54,8 +68,11 @@ Identifier = [:jletter:] [:jletterdigit:]*
 		string.setLength(0); yybegin(STRING);
 	}
 
-	{WHITESPACE}+
-	{yycolumn += yytext().length();}
+	{WHITESPACE}
+	{}
+
+	{COMMENT}
+	{}
 
 	// Symbols
 	//-----------------------------------------------------------------------------

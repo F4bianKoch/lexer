@@ -1,4 +1,20 @@
+// Comment
+/* multiline */
 public class Test {
    static int x;
+   /* multiline
+   .
+   .
+   */
    static int y;
+
+   public static divide(int a, int b) {
+      if (b > 0) {
+         return a / b;
+      }
+
+      return 0;
+   }
 }
+
+// comment
