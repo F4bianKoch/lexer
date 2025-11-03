@@ -1,0 +1,4 @@
+"backslash followed by space: \ is not allowed"
+"unterminated
+"also unterminated \"
+"bad escaped character: \a AND not terminated

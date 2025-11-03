@@ -1,12 +1,7 @@
-// Comment
-/* multiline */
 public class Test {
    static int x;
-   /* multiline
-   .
-   .
-   */
    static int y;
+   int f1d_k;
 
    public static divide(int a, int b) {
       if (b > 0) {
@@ -16,5 +11,3 @@ public class Test {
       return 0;
    }
 }
-
-// comment

@@ -63,8 +63,7 @@ Identifier	= [:jletter:] [:jletterdigit:]*
 		}
 	}
 
-	\"
-	{ 
+	\" { 
 		string.setLength(0); yybegin(STRING);
 	}
 
@@ -369,7 +368,7 @@ Identifier	= [:jletter:] [:jletterdigit:]*
 		string.append('\"'); 
 	}
 
-	\\
+	\\\\
 	{ 
 		string.append('\\'); 
 	}
@@ -381,7 +380,7 @@ Identifier	= [:jletter:] [:jletterdigit:]*
 			"String was never closed! " + string.toString() 
 		);
 	}
-	
+
 	<<EOF>>
 	{
 		yybegin(YYINITIAL);
